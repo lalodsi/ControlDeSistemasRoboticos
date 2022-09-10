@@ -9,7 +9,6 @@ from sympy.interactive import printing
 from control import tf2ss, tf, ssdata
 from os import system
 from time import sleep
-# from sympy.abc import s, t
 
 # Funcion para imprimir la entrada
 def imprimir_entradas(size_num, size_den, num, den):
@@ -34,10 +33,10 @@ def imprimir_entradas(size_num, size_den, num, den):
 printing.init_printing(use_latex='True')
 
 s, t, tao = symbols('s t tao')
-# Ejemplo 1
-A = Matrix([[0,1],[-4,-5]])
-B = Matrix([[0],[1]])
-C = Matrix([1,0])
+# # Ejemplo 1
+# A = Matrix([[0,1],[-4,-5]])
+# B = Matrix([[0],[1]])
+# C = Matrix([1,0])
 X0 = Matrix([[-1],[2]])
 
 # n = 2
@@ -55,7 +54,7 @@ while(not datos_correctos):
     for i in range(size_denominador):
         system("clear")
         imprimir_entradas(0, size_denominador, num, den)
-        den.append(int(input(f"\n\nDigita el valor de la constante de a*d^{i}y(t)/dt: ")))
+        den.append(int(input(f"\n\nDigita el valor de la constante de a*d^{i}y/dt: ")))
         
     # Obtener den
     system("clear")
@@ -64,7 +63,7 @@ while(not datos_correctos):
     for i in range(size_numerador):
         system("clear")
         imprimir_entradas(size_numerador, size_denominador, num, den)
-        num.append(int(input(f"\n\nDigita el valor de a*d^{i}u(t)/dt: ")))
+        num.append(int(input(f"\n\nDigita el valor de a*d^{i}u/dt: ")))
 
     system("clear")
     imprimir_entradas(size_numerador, size_denominador, num, den)
@@ -73,56 +72,41 @@ while(not datos_correctos):
     while (respuesta != 'y' and respuesta != 'n'):
         respuesta = input("Sólo puedes elegir entre 'y' y 'n'. Son correctos estos valores?(y/n): ")
     if respuesta == 'y':
-        datos_correctos == True
+        datos_correctos = True
     elif respuesta == 'n':
-        datos_correctos == False
+        datos_correctos = False
         
-
 # Comienzo del programa
+
+# Espacio de estados
+system("clear")
+print("\nGenerando espacio de estados...")
+sleep(1)
 sistema = tf2ss(num,den)
-print(sistema)
 A, B, C, D = ssdata(sistema)
-
-print("\nMatriz A----\n")
-pprint(A)
-
+print("Espacio de estados generado correctamente!")
+print(sistema)
+sleep(1)
 
 # Obteniendo la matriz exponencial
+print("\nCalculando la matriz Exponencial")
+print("\n\tCalculando matrices...")
 I = eye(2)
-sI = s * I
+inversa_polinomio = (s * I - A).inv()
 
-print("\nPolinomio---- sI - A:\n")
-polinomio = sI - A; 
-pprint(polinomio)
-
-print("\n\nInversa---- (sI - A)^-1:\n")
-inversa_polinomio = polinomio.inv()
-pprint(inversa_polinomio)
-
-print("\nInversa de laplace---- L{(sI - A)^-1}:\n")
+print("\n\tCalculando transformada inversa de laplace...")
 matriz_exponencial = inverse_laplace_transform(inversa_polinomio, s, t)
-pprint(matriz_exponencial)
-
-# Realizando la multiplicacion
-print("\n---- e^(at) * x0:\n")
-e_por_x0 = matriz_exponencial * X0
-pprint(e_por_x0)
-
-# Realizando la integral
-print("\n---- integral:\n")
-
 matriz_exponencial_menosTao = inverse_laplace_transform(inversa_polinomio, s, t-tao)
+print("\nMatriz exponencial calculada correctamente!\n")
+
+print("\nCalculando integrales...\n")
 integral = integrate(matriz_exponencial_menosTao, (tao, 0, t))
-pprint(integral)
-
-print("\n---- x(t) = :\n")
-x_no_simplificado = e_por_x0 + integral * B
+print("\nCalculando x(t)...\n")
+x_no_simplificado = matriz_exponencial * X0 + integral * B
 x = simplify(x_no_simplificado)
-pprint(x)
 
-print("\n---- y(t) = :\n")
+print("\nCalculando y(t)...\n")
 y = C * x
-# y = C.transpose() * x
 # pprint(C.transpose())
 pprint(y)
 
