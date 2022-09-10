@@ -8,6 +8,7 @@ from sympy.plotting import plot
 from sympy.interactive import printing
 from control import tf2ss, tf, ssdata
 from os import system
+from time import sleep
 # from sympy.abc import s, t
 
 # Funcion para imprimir la entrada
@@ -17,17 +18,17 @@ def imprimir_entradas(size_num, size_den, num, den):
         try:
             print(num[i],end='')
         except:
-            print("",end='')
-        if i < (size_num + 1):
-            print("\t", end='')
+            print("_",end='')
+        if i < (size_num - 1):
+            print("  ", end='')
     print(f"], denominador: [", end='')
-    for i in range(size_den + 1):
+    for i in range(size_den):
         try:
             print(den[i],end='')
         except:
-            print("",end='')
-        if i < (size_den):
-            print("\t", end='')
+            print("_",end='')
+        if i < (size_den - 1):
+            print("   ", end='')
     print(f"]")
 
 printing.init_printing(use_latex='True')
@@ -42,31 +43,42 @@ X0 = Matrix([[-1],[2]])
 # n = 2
 # den = [1, 3, 2]
 # num = [5]
-den = []
-num = []
-
-# Ingresar datos del usuario
-
-# Obtener num
-system("clear")
-imprimir_entradas(0,0, [], [])
-size_denominador = int(input("\n\nDigita el valor de n para las constantes de Y: "))
-for i in range(size_denominador + 1):
+datos_correctos = False
+while(not datos_correctos):
+    # Ingresar datos del usuario
+    den = []
+    num = []
+    # Obtener num
+    system("clear")
+    imprimir_entradas(0,0, [], [])
+    size_denominador = int(input("\n\nDigita el valor de n para las constantes de Y: ")) + 1
+    for i in range(size_denominador):
+        system("clear")
+        imprimir_entradas(0, size_denominador, num, den)
+        den.append(int(input(f"\n\nDigita el valor de la constante de a*d^{i}y(t)/dt: ")))
+        
+    # Obtener den
     system("clear")
     imprimir_entradas(0, size_denominador, num, den)
-    den.append(int(input(f"\n\nDigita el valor de la constante de a*d^{i}y(t)/dt: ")))
-    
-# Obtener den
-system("clear")
-imprimir_entradas(0, size_denominador, num, den)
-size_numerador = int(input("Digita el valor de n para las constantes de U: "))
-for i in range(size_numerador + 1):
+    size_numerador = int(input("\n\nDigita el valor de n para las constantes de U: ")) + 1
+    for i in range(size_numerador):
+        system("clear")
+        imprimir_entradas(size_numerador, size_denominador, num, den)
+        num.append(int(input(f"\n\nDigita el valor de a*d^{i}u(t)/dt: ")))
+
     system("clear")
     imprimir_entradas(size_numerador, size_denominador, num, den)
-    num.append(int(input(f"Digita el valor de a*d^{i}u(t)/dt: ")))
+    respuesta = input("\n\nSon correctos estos valores?(y/n): ")
 
-# print(num)
-# print(den)
+    while (respuesta != 'y' and respuesta != 'n'):
+        respuesta = input("Sólo puedes elegir entre 'y' y 'n'. Son correctos estos valores?(y/n): ")
+    if respuesta == 'y':
+        datos_correctos == True
+    elif respuesta == 'n':
+        datos_correctos == False
+        
+
+# Comienzo del programa
 sistema = tf2ss(num,den)
 print(sistema)
 A, B, C, D = ssdata(sistema)
