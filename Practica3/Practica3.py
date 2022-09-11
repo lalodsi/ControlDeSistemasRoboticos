@@ -30,18 +30,15 @@ def imprimir_entradas(size_num, size_den, num, den):
             print("   ", end='')
     print(f"]")
 
+def abort():
+    print("\n\tHubo un error")
+    exit()
+
 printing.init_printing(use_latex='True')
 
-s, t, tao = symbols('s t tao')
-# # Ejemplo 1
-# A = Matrix([[0,1],[-4,-5]])
-# B = Matrix([[0],[1]])
-# C = Matrix([1,0])
-X0 = Matrix([[-1],[2]])
 
-# n = 2
-# den = [1, 3, 2]
-# num = [5]
+s, t, tao = symbols('s t tao')
+X0 = Matrix([[-1],[2]])
 datos_correctos = False
 while(not datos_correctos):
     # Ingresar datos del usuario
@@ -82,10 +79,14 @@ while(not datos_correctos):
 system("clear")
 print("\nGenerando espacio de estados...")
 sleep(1)
-sistema = tf2ss(num,den)
-A, B, C, D = ssdata(sistema)
+sistema_tf = tf(num,den)
+A, B, C, D = ssdata(sistema_tf)
 print("Espacio de estados generado correctamente!")
-print(sistema)
+print(A)
+print(B)
+print(C)
+print(D)
+print(sistema_tf)
 sleep(1)
 
 # Obteniendo la matriz exponencial
@@ -95,8 +96,11 @@ I = eye(2)
 inversa_polinomio = (s * I - A).inv()
 
 print("\n\tCalculando transformada inversa de laplace...")
-matriz_exponencial = inverse_laplace_transform(inversa_polinomio, s, t)
-matriz_exponencial_menosTao = inverse_laplace_transform(inversa_polinomio, s, t-tao)
+try:
+    matriz_exponencial = inverse_laplace_transform(inversa_polinomio, s, t)
+    matriz_exponencial_menosTao = inverse_laplace_transform(inversa_polinomio, s, t-tao)
+except:
+    abort()
 print("\nMatriz exponencial calculada correctamente!\n")
 
 print("\nCalculando integrales...\n")
@@ -104,10 +108,10 @@ integral = integrate(matriz_exponencial_menosTao, (tao, 0, t))
 print("\nCalculando x(t)...\n")
 x_no_simplificado = matriz_exponencial * X0 + integral * B
 x = simplify(x_no_simplificado)
+pprint(x)
 
 print("\nCalculando y(t)...\n")
-y = C * x
-# pprint(C.transpose())
+y = simplify(C * x)
 pprint(y)
 
 p1 = plot(x[0], show=False)
